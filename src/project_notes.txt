@@ -1,0 +1,3 @@
+BertTokenizer converts the raw text of reviews into a list of numbers (token IDs)
+it's a bridge between the raw text dataset and numerical tensors that the model will use
+
