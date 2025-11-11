@@ -11,7 +11,6 @@ TRAIN_SPLIT = 0.7
 TEST_SPLIT = 0.15 # (or use torchtext default test)
 BATCH_SIZE = 32
 
-
 """__model__"""
 LSTM_LAYERS = 2
 DROPOUT_RATE = 0.3
