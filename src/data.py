@@ -3,8 +3,6 @@ from torch.utils.data import random_split, DataLoader, ConcatDataset
 from transformers import BertTokenizer
 import torch
 import lightning as L
-
-# Import config at the top
 import config 
 
 class IMDBDataModule(L.LightningDataModule):
@@ -25,8 +23,8 @@ class IMDBDataModule(L.LightningDataModule):
     """Downloads the IMDB dataset the .data directory
     Important: torchtext.dataset provides the dataset in 2 parts - train & test;
     Pytorch won't assign IMBD calls to a vars within prepare_data() """
-    IMDB(root=self.root, split="train") # 25k
-    IMDB(root=self.root, split="test") # 25k
+    IMDB(root=self.root, split="train") # 25k observations
+    IMDB(root=self.root, split="test") # 25k observations
   
   def setup(self, stage: str = None):
     """Seteup the training, validation, and test sets
