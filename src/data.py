@@ -31,6 +31,7 @@ class IMDBDataModule(L.LightningDataModule):
     Reqs: 70 (train) /15 (validation)/ 15 (test)"""
 
     # get the train and test pre-splits from IMBD
+   # src: https://docs.pytorch.org/text/stable/datasets.html#imdb
     train_set = IMDB(root=self.root, split="train") 
     test_set = IMDB(root=self.root, split="test")
 
@@ -55,6 +56,9 @@ class IMDBDataModule(L.LightningDataModule):
   def translate(self, batch):
     """Translates the batch of reviews and ratings into numerical tensors for the model"""
     # The IMDB dataset returns (rating, review).
+    # src: https://www.kaggle.com/code/tusonggao/get-imdb-data-from-torchtext
+    # src: https://www.w3schools.com/python/ref_func_zip.asp. how to use zip function
+
     ratings, reviews = zip(*batch) # unzips list of (rating, review) tuples
     
     # tokenize the batch of reviews
@@ -77,24 +81,24 @@ class IMDBDataModule(L.LightningDataModule):
   def train_dataloader(self):
     """Load em (training set, validation set, and test set) up!"""
     return DataLoader(
-        self.train_dataset,
-        batch_size=self.batch_size,
-        shuffle=True,
-        collate_fn=self.collate_fn # Use the assigned function
+      self.train_dataset,
+      batch_size=self.batch_size,
+      shuffle=True,
+      collate_fn=self.collate_fn # Use the assigned function
     )
     
   def val_dataloader(self):
-      return DataLoader(
-          self.val_dataset,
-          batch_size=self.batch_size,
-          shuffle=False,
-          collate_fn=self.collate_fn
-      )
+    return DataLoader(
+      self.val_dataset,
+      batch_size=self.batch_size,
+      shuffle=False,
+      collate_fn=self.collate_fn
+    )
       
   def test_dataloader(self):
-      return DataLoader(
-          self.test_dataset,
-          batch_size=self.batch_size,
-          shuffle=False,
-          collate_fn=self.collate_fn
-      )
+    return DataLoader(
+      self.test_dataset,
+      batch_size=self.batch_size,
+      shuffle=False,
+      collate_fn=self.collate_fn
+    )
