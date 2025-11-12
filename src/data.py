@@ -37,7 +37,7 @@ class IMDBDataModule(L.LightningDataModule):
     # combine the sets
     IMBD_dataset = ConcatDataset([train_set, test_set])
 
-    # the dataset's size; ned this to compute for 70/15/15
+    # the dataset's size; need this to compute for 70/15/15
     size = len(IMBD_dataset)
     train_set_size = int(size * config.TRAIN_SPLIT)
     val_set_size = int(size * config.VAL_SPLIT)
