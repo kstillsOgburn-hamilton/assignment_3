@@ -13,6 +13,7 @@ class LightningBi_LSTM(L.LightningModule):
     # saves all the __init__ args to the checkpoint Lightning logs
     self.save_hyperparameters() 
     self.learning_rate = config.LEARNING_RATE
+    
 
     # vocab_size come from the bert-based-case tokenizer in 
     # the main training script
@@ -25,7 +26,7 @@ class LightningBi_LSTM(L.LightningModule):
         dropout=config.DROPOUT_RATE,
     )
 
-    self.criterion = nn.CrossEntropyLoss()
+    self.criterion = nn.NLLLoss()
 
     # logging metrics
     self.train_acc = torchmetrics.Accuracy(
@@ -35,6 +36,9 @@ class LightningBi_LSTM(L.LightningModule):
         task="multiclass", num_classes=config.NUM_CLASSES
     )
     self.test_acc = torchmetrics.Accuracy(
+        task="multiclass", num_classes=config.NUM_CLASSES
+    )
+    self.test_conf_matrix = torchmetrics.ConfusionMatrix(
         task="multiclass", num_classes=config.NUM_CLASSES
     )
 
@@ -60,6 +64,8 @@ class LightningBi_LSTM(L.LightningModule):
     preds = torch.argmax(logits, dim=1)
     
     return loss, preds, labels
+  
+  
 
   def training_step(self, batch, batch_idx):
     """ Does one training step """
@@ -101,8 +107,8 @@ class LightningBi_LSTM(L.LightningModule):
   def test_step(self, batch, batch_idx):
     """ Does one test step """
     loss, preds, labels = self._helper_step(batch, batch_idx)
-    
     self.test_acc(preds, labels)
+    self.test_conf_matrix(preds, labels)
     self.log('test_loss', 
              loss, on_epoch=True, 
              prog_bar=True, 
@@ -112,6 +118,16 @@ class LightningBi_LSTM(L.LightningModule):
              on_epoch=True, 
              prog_bar=True, 
              logger=True)
+  def test_epoch_end(self, outputs):
+      """ Runs after the test dataloader is done """
+      
+      # computes the last confusion matrix
+      cm = self.test_conf_matrix.compute()
+      print(f"Test Confusion Matrix:\n{cm}")
+      # log the confusion matrix to wandb
+      self.log("test_confusion_matrix", cm)
+      # rester the matrix for the next test run
+      self.test_conf_matrix.reset()
 
   def configure_optimizers(self):
     """ Prepares optimizer """
