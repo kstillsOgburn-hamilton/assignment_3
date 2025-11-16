@@ -38,12 +38,12 @@ class Bi_LSTM(nn.Module):
         #FC layer with 2 class output
         self.fc = nn.Linear(hidden_size * 2, output_size)
         #Activation: Sigmoid or Softmax
-        self.softmax = nn.Softmax()
+        # self.softmax = nn.Softmax()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.embedding(x)
         x, _ = self.lstm(x) 
         x = x[:,-1,:] #NEED TO CHECK THIS ONCE SLIDES COME OUT
         x = self.fc(x)
-        x = self.softmax(x)
+        # x = self.softmax(x)
         return x

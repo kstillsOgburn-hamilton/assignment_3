@@ -20,9 +20,7 @@ class IMDBDataModule(L.LightningDataModule):
     self.collate_fn = self.translate
 
   def prepare_data(self):
-    """Downloads the IMDB dataset the .data directory
-    Important: torchtext.dataset provides the dataset in 2 parts - train & test;
-    Pytorch won't assign IMBD calls to a vars within prepare_data() """
+    """ Downloads the IMDB dataset the .data directory """
     IMDB(root=self.root, split="train") # 25k observations
     IMDB(root=self.root, split="test") # 25k observations
   
@@ -30,7 +28,7 @@ class IMDBDataModule(L.LightningDataModule):
     """Seteup the training, validation, and test sets
     Reqs: 70 (train) /15 (validation)/ 15 (test)"""
 
-    # get the train and test pre-splits from IMBD
+  # get the train and test pre-splits from IMBD
    # src: https://docs.pytorch.org/text/stable/datasets.html#imdb
     train_set = IMDB(root=self.root, split="train") 
     test_set = IMDB(root=self.root, split="test")
