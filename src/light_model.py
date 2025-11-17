@@ -111,16 +111,22 @@ class LightningBi_LSTM(L.LightningModule):
              prog_bar=True, 
              logger=True)
     
-  def test_epoch_end(self, outputs):
-      """ Runs after the test dataloader is done """
-      
-      # computes the last confusion matrix
-      cm = self.test_conf_matrix.compute()
-      print(f"Test Confusion Matrix:\n{cm}")
-      # log the confusion matrix to wandb
-      self.log("test_confusion_matrix", cm)
-      # rester the matrix for the next test run
-      self.test_conf_matrix.reset()
+  def on_test_epoch_end(self):
+    """ Runs after the test dataloader is done """
+    # computes the last confusion matrix
+    cm = self.test_conf_matrix.compute()
+    tn, fp = cm[0, 0], cm[0, 1]
+    fn, tp = cm[1, 0], cm[1, 1] 
+
+    # Print the full confusion matrix
+    print("Test Confusion Matrix: \n")
+    # Log each value separately (all scalars → works)
+    #Citation: https://docs.pytorch.org/docs/stable/generated/torch.Tensor.float.html
+    self.log("test_TN", tn.to(torch.float32))
+    self.log("test_FP", fp.to(torch.float32))
+    self.log("test_FN", fn.to(torch.float32))
+    self.log("test_TP", tp.to(torch.float32))
+    self.test_conf_matrix.reset()
 
   def configure_optimizers(self):
     """ Prepares optimizer """

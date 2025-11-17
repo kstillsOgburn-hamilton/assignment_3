@@ -85,7 +85,7 @@ class IMDBDataModule(L.LightningDataModule):
       self.train_dataset,
       batch_size=self.batch_size,
       shuffle=True,
-      collate_fn=self.collate_fn # Use the assigned function
+      collate_fn=self.collate_fn, # Use the assigned function
       num_workers = self.num_workers
     )
     
@@ -94,7 +94,7 @@ class IMDBDataModule(L.LightningDataModule):
       self.val_dataset,
       batch_size=self.batch_size,
       shuffle=False,
-      collate_fn=self.collate_fn
+      collate_fn=self.collate_fn,
       num_workers = self.num_workers
     )
       
@@ -103,6 +103,6 @@ class IMDBDataModule(L.LightningDataModule):
       self.test_dataset,
       batch_size=self.batch_size,
       shuffle=False,
-      collate_fn=self.collate_fn
+      collate_fn=self.collate_fn,
       num_workers = self.num_workers
     )
