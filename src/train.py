@@ -2,7 +2,7 @@ import lightning as L
 from lightning.pytorch.callbacks import \
 ModelCheckpoint, EarlyStopping
 from lightning.pytorch.loggers import \
-    WandbLogger
+    WandbLogger, TensorLogger
 from transformers import BertTokenizer
 import config
 from datamodule_IMBD import IMDBDataModule
@@ -25,7 +25,19 @@ config_dict = {
         if not key.startswith("__")
     }
 
+# wandb.init(
+#         project="IMBD",
+#         config=dict(
+#             optimizer="adamw",
+#             lr=1e-3,
+#             scheduler="plateau",
+#             loss="cross_entropy",
+#             epochs=100,
+#     ),
+# )
 def main():
+    cfg = wandb.config # accesses hyperparameters
+
     # random seed to reproduce model experiment
     L.seed_everything(config.RANDOM_SEED, workers=True)
 
@@ -39,7 +51,8 @@ def main():
     print("preparing and initializing the IMBD data module...")
     data_module = IMDBDataModule(
         tokenizer=tokenizer,
-        batch_size=config.BATCH_SIZE,
+        # batch_size=config.BATCH_SIZE,
+        batch_size=cfg.batch_size,
         max_length=config.MAX_SEQ_LENGTH
     )
     # passes the bert-base-uncased vocab_size to your LightningBi_LSTM
@@ -66,7 +79,7 @@ def main():
             precision="16-mixed",
             max_epochs=config.NUM_EPOCHS,
             callbacks=[checkpoint_callback, early_stop],
-            logger=wandb_logger,
+            logger=[wandb_logger, logger]
             devices=1,
             accelerator="gpu"
         )
