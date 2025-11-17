@@ -4,7 +4,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix
 
 # import your modules
 from model import SentimentModel
-from data import dataModule
+from data import IMDBDataModule
 
 
 def main():
