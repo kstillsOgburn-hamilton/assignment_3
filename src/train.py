@@ -2,7 +2,7 @@ import lightning as L
 from lightning.pytorch.callbacks import \
 ModelCheckpoint, EarlyStopping
 from lightning.pytorch.loggers import \
-    WandbLogger
+    WandbLogger, TensorBoardLogger
 from transformers import BertTokenizer
 import config
 from datamodule import IMDBDataModule
@@ -27,6 +27,18 @@ config_dict = {
         for key in dir(config)
         if not key.startswith("__")
     }
+
+wandb.init(
+    project="IMBD",
+    config=dict(
+        batch_size=config.BATCH_SIZE,
+        optimizer=config.BATCH_SIZE,
+        lr=config.LEARNING_RATE,
+        scheduler=config.SCHEDULER,
+        loss=config.LOSS,
+        epochs=config.NUM_EPOCHS,
+    ),
+)
 
 def main():
     # random seed to reproduce model experiment
@@ -61,9 +73,13 @@ def main():
         patience=10
     )
     wandb_logger = WandbLogger(
-        project="bi_lstm",  # project name on wandb
+        project="IMBD",  # project name on wandb
         log_model=True,
         config=config_dict # from the config.py file
+    )
+    logger = TensorBoardLogger(
+        "lightning-log",
+        name="imbd"
     )
     trainer = L.Trainer(
             precision="16-mixed",

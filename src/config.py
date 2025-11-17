@@ -22,3 +22,5 @@ NUM_CLASSES = 2 # positive/negative ratings
 LEARNING_RATE = 1e-4
 NUM_EPOCHS = 10
 OPTIMIZER = "AdamW" # or some other optimizer algorithm
+SCHEDULER="plateau"
+LOSS="cross_entropy"
