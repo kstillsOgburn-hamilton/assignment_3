@@ -12,21 +12,6 @@ from sklearn.metrics import accuracy_score, confusion_matrix
 from model import SentimentModel
 from data import dataModule
 
-
-def main():
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    # load trained model
-    checkpoint_path = "path_to_your_checkpoint.ckpt"
-    model = SentimentModel.load_from_checkpoint(checkpoint_path)
-    model.to(device)
-    model.eval()
-
-    # load data
-    data_module = dataModule()
-    data_module.setup(stage="test")
-    test_loader = data_module.test_dataloader()
-
     all_preds = []
     all_labels = []
     misclassified_examples = []
@@ -53,6 +38,41 @@ def main():
                     }
                     misclassified_examples.append(example)
 
+
+if __name__ == "__main__":
+    main()
+
+
+import lightning as L
+from transformers import BertTokenizer
+import torch
+
+import config
+from datamodule_IMBD import IMDBDataModule
+from model_bilstm import LightningBi_LSTM
+
+def main():
+    CHECKPOINT_PATH = "checkpoints/OUR_SAVED_MODEL.ckpt" 
+    print("loading bert-based-uncased tokenizer...")
+    tokenizer = BertTokenizer.from_pretrained(config.TOKENIZER_NAME)
+
+    print(f"loading model at {CHECKPOINT_PATH}...")
+    model_module = LightningBi_LSTM.load_from_checkpoint(CHECKPOINT_PATH)
+    
+    print("preparing the data module...")
+    data_module = IMDBDataModule(
+        tokenizer=tokenizer,
+        batch_size=config.BATCH_SIZE,
+        max_length=config.MAX_SEQ_LENGTH
+    )
+    print("initializing the trainer...")
+    trainer = L.Trainer(
+        accelerator="gpu",
+        devices=1,
+    )
+    print("running the model with the test set...")
+    trainer.test(model_module, datamodule=data_module)
+
     # compute metrics
     acc = accuracy_score(all_labels, all_preds)
     cm = confusion_matrix(all_labels, all_preds)
@@ -62,10 +82,20 @@ def main():
     print("Confusion matrix")
     print(cm)
 
+
+    # save misclassified examples
+    for i in range(len(labels)):
+        if preds[i] != labels[i]:
+            example = {
+                "predicted": preds[i].item(),
+                "true": labels[i].item(),
+                "text": batch["text"][i],
+            }
+            misclassified_examples.append(example)
+
     print("Three misclassified examples")
     for item in misclassified_examples[:3]:
         print(item)
-
 
 if __name__ == "__main__":
     main()
