@@ -1,5 +1,5 @@
-from torchtext.datasets import IMDB
-from torch.utils.data import random_split, DataLoader, ConcatDataset
+from datasets import load_dataset
+from torch.utils.data import random_split, DataLoader
 from transformers import BertTokenizer
 import torch
 import lightning as L
@@ -20,23 +20,23 @@ class IMDBDataModule(L.LightningDataModule):
     self.collate_fn = self.translate
 
   def prepare_data(self):
-    """Downloads the IMDB dataset the .data directory
-    Important: torchtext.dataset provides the dataset in 2 parts - train & test;
-    Pytorch won't assign IMBD calls to a vars within prepare_data() """
-    IMDB(root=self.root, split="train") # 25k observations
-    IMDB(root=self.root, split="test") # 25k observations
+    """Downloads the IMDB dataset
+    Important: Hugging Face datasets automatically downloads the dataset"""
+    load_dataset("imdb", cache_dir=self.root)
   
   def setup(self, stage: str = None):
     """Seteup the training, validation, and test sets
     Reqs: 70 (train) /15 (validation)/ 15 (test)"""
 
-    # get the train and test pre-splits from IMBD
-   # src: https://docs.pytorch.org/text/stable/datasets.html#imdb
-    train_set = IMDB(root=self.root, split="train") 
-    test_set = IMDB(root=self.root, split="test")
+    # Load the IMDB dataset from Hugging Face
+    dataset = load_dataset("imdb", cache_dir=self.root)
+    
+    # Combine train and test splits
+    train_list = [(item['label'] + 1, item['text']) for item in dataset['train']]
+    test_list = [(item['label'] + 1, item['text']) for item in dataset['test']]
 
     # combine the sets
-    IMBD_dataset = ConcatDataset([train_set, test_set])
+    IMBD_dataset = train_list + test_list
 
     # the dataset's size; ned this to compute for 70/15/15
     size = len(IMBD_dataset)

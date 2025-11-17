@@ -5,18 +5,21 @@ from lightning.pytorch.loggers import \
     WandbLogger
 from transformers import BertTokenizer
 import config
-from datamodule_IMBD import IMDBDataModule
-from model_bilstm import LightningBi_LSTM
+from datamodule import IMDBDataModule
+from light_model import LightningBi_LSTM
 
 import os
 import wandb
 from dotenv import load_dotenv
 
-load_dotenv()  # loads api_key from .env
+# Load .env from parent directory
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 api_key = os.getenv("API_KEY")
 
 if not api_key:
-    raise ValueError("API_KEY not found! Make sure it's set in your .env file.")
+    print("Warning: API_KEY not found in .env file. WandB logging may not work properly.")
+    print("Continuing without API key...")
+    api_key = None
 
 # turns the config file into a python dictionary
 config_dict = {
