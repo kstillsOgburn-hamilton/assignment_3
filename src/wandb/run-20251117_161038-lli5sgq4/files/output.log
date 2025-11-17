@@ -29,9 +29,11 @@ LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
 25.101    Total estimated model params size (MB)
 10        Modules in train mode
 0         Modules in eval mode
-Epoch 1:  15%|▏| 167/1094 [00:12<01:07, 13.79it/s, v_num=sgq4, train_loss_step=-0.563, val_loss=-0.50      
+Epoch 1:  99%|▉| 1080/1094 [01:17<00:01, 13.91it/s, v_num=sgq4, train_loss_step=-0.562, val_loss=-0.5      
 /opt/miniforge3/lib/python3.12/site-packages/lightning/pytorch/trainer/connectors/data_connector.py:433: The 'val_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=11` in the `DataLoader` to improve performance.
 /opt/miniforge3/lib/python3.12/site-packages/torch/nn/modules/module.py:1775: UserWarning: Implicit dimension choice for softmax has been deprecated. Change the call to include dim=X as an argument.
   return self._call_impl(*args, **kwargs)
 /opt/miniforge3/lib/python3.12/site-packages/lightning/pytorch/trainer/connectors/data_connector.py:433: The 'train_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=11` in the `DataLoader` to improve performance.
                                                                                                            
+
+Detected KeyboardInterrupt, attempting graceful shutdown ...

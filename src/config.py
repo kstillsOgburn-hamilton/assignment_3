@@ -10,6 +10,7 @@ VAL_SPLIT = 0.15
 TRAIN_SPLIT = 0.7
 TEST_SPLIT = 0.15 # (or use torchtext default test)
 BATCH_SIZE = 32
+NUM_WORKERS = 8
 
 """__model__"""
 LSTM_LAYERS = 2

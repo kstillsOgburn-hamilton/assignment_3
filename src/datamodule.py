@@ -14,6 +14,7 @@ class IMDBDataModule(L.LightningDataModule):
     self.tokenizer = tokenizer # BertTokenizer
     self.max_length = max_length # fixed uniform length for every review
     self.batch_size = batch_size # size of the batch for training
+    self.num_workers = config.NUM_WORKERS
     
     # collate_fn expects a function that translate our reviews and ratings into a format
     # the model can understand and use for training
@@ -85,6 +86,7 @@ class IMDBDataModule(L.LightningDataModule):
       batch_size=self.batch_size,
       shuffle=True,
       collate_fn=self.collate_fn # Use the assigned function
+      num_workers = self.num_workers
     )
     
   def val_dataloader(self):
@@ -93,6 +95,7 @@ class IMDBDataModule(L.LightningDataModule):
       batch_size=self.batch_size,
       shuffle=False,
       collate_fn=self.collate_fn
+      num_workers = self.num_workers
     )
       
   def test_dataloader(self):
@@ -101,4 +104,5 @@ class IMDBDataModule(L.LightningDataModule):
       batch_size=self.batch_size,
       shuffle=False,
       collate_fn=self.collate_fn
+      num_workers = self.num_workers
     )

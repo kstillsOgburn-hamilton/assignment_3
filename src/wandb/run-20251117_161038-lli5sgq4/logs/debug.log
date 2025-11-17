@@ -20,3 +20,5 @@ config: {'batch_size': 32, 'optimizer': 32, 'lr': 0.0001, 'scheduler': 'plateau'
 2025-11-17 16:10:39,953 INFO    MainThread:1243931 [wandb_run.py:_redirect():2449] Redirects installed.
 2025-11-17 16:10:39,954 INFO    MainThread:1243931 [wandb_init.py:init():1076] run started, returning control to user process
 2025-11-17 16:10:41,970 INFO    MainThread:1243931 [wandb_run.py:_config_callback():1392] config_cb None None {'vocab_size': 30522}
+2025-11-17 16:13:32,859 INFO    wandb-AsyncioManager-main:1243931 [service_client.py:_forward_responses():80] Reached EOF.
+2025-11-17 16:13:32,859 INFO    wandb-AsyncioManager-main:1243931 [mailbox.py:close():137] Closing mailbox, abandoning 1 handles.
