@@ -29,7 +29,7 @@ config_dict = {
     }
 
 wandb.init(
-    project="IMBD",
+    project="IMDB",
     config=dict(
         batch_size=config.BATCH_SIZE,
         optimizer=config.BATCH_SIZE,
@@ -51,7 +51,7 @@ def main():
     # get vocab size to pass to the model
     vocab_size = tokenizer.vocab_size
 
-    print("preparing and initializing the IMBD data module...")
+    print("preparing and initializing the IMDB data module...")
     data_module = IMDBDataModule(
         tokenizer=tokenizer,
         batch_size=config.BATCH_SIZE,
@@ -63,7 +63,7 @@ def main():
     # saves best model based on validation loss
     checkpoint_callback = ModelCheckpoint(
         dirpath="checkpoints",  # save the chkpts here
-        filename="best_model-{epoch:02d}-{val_loss:.2f}",
+        filename="best_model", # Add -{epoch:02d}-{val_loss:.2f} to end during testing
         save_top_k=1,         # save the best model
         monitor="val_loss",   # monitor the val_loss
         mode="min"            # choose lowest val_loss
@@ -73,13 +73,13 @@ def main():
         patience=5
     )
     wandb_logger = WandbLogger(
-        project="IMBD",  # project name on wandb
+        project="IMDB",  # project name on wandb
         log_model=True,
         config=config_dict # from the config.py file
     )
     logger = TensorBoardLogger(
         "lightning-log",
-        name="imbd"
+        name="imdb"
     )
     trainer = L.Trainer(
             precision="16-mixed",
@@ -92,9 +92,7 @@ def main():
 
     print("training in process...")
     trainer.fit(model_module, datamodule=data_module)
-
     print("training done!")
-    trainer.test(model_module, datamodule=data_module)
 
 if __name__ == "__main__":
     main()

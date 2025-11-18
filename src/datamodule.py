@@ -10,7 +10,7 @@ class IMDBDataModule(L.LightningDataModule):
   training and loads the training, validation, and tests sets"""
   def __init__(self, tokenizer: BertTokenizer, batch_size: int, max_length: int, root: str = ".data"):
     super().__init__()
-    self.root = root # directory where the IMbD dataset will be saved
+    self.root = root # directory where the IMDB dataset will be saved
     self.tokenizer = tokenizer # BertTokenizer
     self.max_length = max_length # fixed uniform length for every review
     self.batch_size = batch_size # size of the batch for training
@@ -37,10 +37,10 @@ class IMDBDataModule(L.LightningDataModule):
     test_list = [(item['label'] + 1, item['text']) for item in dataset['test']]
 
     # combine the sets
-    IMBD_dataset = train_list + test_list
+    IMDB_dataset = train_list + test_list
 
     # the dataset's size; ned this to compute for 70/15/15
-    size = len(IMBD_dataset)
+    size = len(IMDB_dataset)
     train_set_size = int(size * config.TRAIN_SPLIT)
     val_set_size = int(size * config.VAL_SPLIT)
     
@@ -49,7 +49,7 @@ class IMDBDataModule(L.LightningDataModule):
 
     # The order of sizes in the list MUST match the order of variables
     self.train_dataset, self.val_dataset, self.test_dataset = random_split(
-      IMBD_dataset, 
+      IMDB_dataset, 
       [train_set_size, val_set_size, test_set_size],
       generator = torch.Generator().manual_seed(config.RANDOM_SEED)
   )

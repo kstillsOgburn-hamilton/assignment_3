@@ -119,7 +119,8 @@ class LightningBi_LSTM(L.LightningModule):
     tn, fp = cm[0, 0], cm[0, 1]
     fn, tp = cm[1, 0], cm[1, 1] 
 
-    print("Test Confusion Matrix: \n")
+    print("\nTest Confusion Matrix:")
+    print(f'   0    1\n0 {tn} {fp}\n1 {fn} {tp}\n')
     #src: https://docs.pytorch.org/docs/stable/generated/torch.Tensor.float.html
     self.log("test_TN", tn.to(torch.float32))
     self.log("test_FP", fp.to(torch.float32))

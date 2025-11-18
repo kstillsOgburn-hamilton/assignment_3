@@ -1,6 +1,5 @@
 import lightning as L
 import torch
-from sklearn.metrics import accuracy_score, confusion_matrix
 from transformers import BertTokenizer
 
 import config
@@ -36,6 +35,7 @@ def main():
     all_labels = []
     misclassed = []
 
+    #Loop to collect the misclassified examples 
     print("running evaluation loop...")
     with torch.no_grad():
         for batch in test_loader:
@@ -67,12 +67,10 @@ def main():
                     }
                 )
 
-    # the metrics
-    cm = confusion_matrix(all_labels, all_preds, labels=[0, 1])
-    acc = accuracy_score(all_labels, all_preds)
-
-    print(f"\nTest Accuracy: {acc}")
-    print(f"\nConfusion Matrix: \n {cm}")
+    # The metrics
+    # Technically a second evaluation but the first non lightning loop was to collect the misclassifed
+    trainer = L.Trainer()
+    trainer.test(model_module, datamodule=data_module)
 
     print("\n3 misclassified examples...")
     for example in misclassed[:3]:

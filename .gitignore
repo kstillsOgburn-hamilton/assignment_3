@@ -1,4 +1,4 @@
-.# Ignore environment variables
+# Ignore environment variables
 .env
 
 # Ignore Python cache files
