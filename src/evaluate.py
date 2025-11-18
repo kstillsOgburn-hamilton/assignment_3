@@ -11,7 +11,7 @@ from light_model import LightningBi_LSTM
 def main():
     """Loads the checkpoint, evaluates it, and prints metrics."""
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    checkpoint_path = "checkpoints/OUR_SAVED_MODEL.ckpt" # update this with the location of the chkpoint
+    checkpoint_path = "checkpoints/best_model.ckpt" # update this with the location of the chkpoint
 
     tokenizer = BertTokenizer.from_pretrained(config.TOKENIZER_NAME)
 
@@ -61,8 +61,9 @@ def main():
                 # and then builds a dictionary capturing the predicted class, the true class,
                 # and the decoded review, later appending it to misclassed (i.e a Python list)
                 misclassed.append(
-                    {"predicted": preds[idx].item(), "true": labels[idx].item(),
-                     "text": decoded_txt,
+                    {"predicted": preds[idx].item(), 
+                    "true": labels[idx].item(),
+                     "text": decoded_txt
                     }
                 )
 
@@ -71,11 +72,14 @@ def main():
     acc = accuracy_score(all_labels, all_preds)
 
     print(f"\nTest Accuracy: {acc}")
-    print(f"\nConfusion Matrix: {cm}")
+    print(f"\nConfusion Matrix: \n {cm}")
 
     print("\n3 misclassified examples...")
     for example in misclassed[:3]:
-        print(example)
+        predicted = example["predicted"]
+        true = example["true"]
+        text = example["text"]
+        print(f'Predicted: {predicted}\nTrue: {true}\nText: {text}\n')
 
 if __name__ == "__main__":
     L.seed_everything(config.RANDOM_SEED, workers=True)
