@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 import lightning as L
 import torchmetrics
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 import config
 from model import Bi_LSTM
 
@@ -132,6 +133,24 @@ class LightningBi_LSTM(L.LightningModule):
     """ Prepares optimizer """
     optimizer = optim.AdamW(
           self.parameters(), 
-          lr=self.learning_rate
+          lr=self.learning_rate,
+          weight_decay=0.01
     )
-    return optimizer
+
+# 2. Define the scheduler
+    scheduler = {
+        'scheduler': ReduceLROnPlateau(
+            optimizer,
+            mode='min',         # Monitor a loss metric ('min')
+            factor=0.1,         # New LR = Current LR * 0.1
+            patience=5,         # Number of epochs with no improvement before reduction
+            min_lr=1e-7         # Minimum learning rate threshold
+        ),
+        'interval': 'epoch',    # Check the metric after every epoch
+        'frequency': 1,         # Every 1 epoch
+        'monitor': 'val_loss',  # The metric to monitor (must be logged in validation_step)
+        'strict': True,
+    }
+    
+    # 3. Return the optimizer and scheduler dictionary
+    return [optimizer], [scheduler]

@@ -17,7 +17,7 @@ load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 api_key = os.getenv("API_KEY")
 
 if not api_key:
-    print("Warning: API_KEY not found in .env file. WandB logging may not work properly.")
+    print("API_KEY not found in .env file.")
     print("Continuing without API key...")
     api_key = None
 
@@ -41,7 +41,7 @@ wandb.init(
 )
 
 def main():
-    # random seed to reproduce model experiment
+    # random seed to reproduce this model experiment
     L.seed_everything(config.RANDOM_SEED, workers=True)
 
     # uses Google's pre-trained bert-base-uncased's tokenizer
@@ -70,7 +70,7 @@ def main():
     )
     early_stop = EarlyStopping(
         monitor="val_loss",
-        patience=10
+        patience=5
     )
     wandb_logger = WandbLogger(
         project="IMBD",  # project name on wandb

@@ -1,64 +1,82 @@
+import lightning as L
 import torch
-from torch.utils.data import DataLoader
 from sklearn.metrics import accuracy_score, confusion_matrix
+from transformers import BertTokenizer
 
-from model import LightningBi_LSTM # used to import our trained model
+import config
 from datamodule import IMDBDataModule
+from light_model import LightningBi_LSTM
 
 
 def main():
-    """Peforms an inference test on the trained model"""
+    """Loads the checkpoint, evaluates it, and prints metrics."""
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    checkpoint_path = "checkpoints/OUR_SAVED_MODEL.ckpt" # update this with the location of the chkpoint
 
-    # load trained model
-    checkpoint_path = "path_to_your_checkpoint.ckpt"
-    model = SentimentModel.load_from_checkpoint(checkpoint_path)
-    model.to(device)
-    model.eval()
+    tokenizer = BertTokenizer.from_pretrained(config.TOKENIZER_NAME)
 
-    # load IMDB dataset
-    data_module = IMDBDataModule()
+    print(f"Loading model from {checkpoint_path}...")
+    model_module = LightningBi_LSTM.load_from_checkpoint(
+        checkpoint_path, vocab_size=tokenizer.vocab_size
+    )
+    model_module.to(device)
+    model_module.eval()
+
+    print("Preparing the IMDB data module...")
+    data_module = IMDBDataModule(
+        tokenizer=tokenizer,
+        batch_size=config.BATCH_SIZE,
+        max_length=config.MAX_SEQ_LENGTH
+    )
+    # run the test dataset
     data_module.setup(stage="test")
     test_loader = data_module.test_dataloader()
 
-    all_preds = [] # our predictions
-    all_labels = [] # correct answers/labels
-    misclassified_examples = [] # misclassed examples
+    all_preds = []
+    all_labels = []
+    misclassed = []
 
-    # evaluation loop
+    print("running evaluation loop...")
     with torch.no_grad():
         for batch in test_loader:
             input_ids = batch["input_ids"].to(device)
-            labels = batch["labels"].to(device)
-
-            logits = model(input_ids)
+            labels = batch["ratings"].to(device)
+            
+            logits = model_module(input_ids)
             preds = torch.argmax(logits, dim=1)
 
+            all_labels.extend(labels.cpu().tolist()) # shift to cpu to save resources
             all_preds.extend(preds.cpu().tolist())
-            all_labels.extend(labels.cpu().tolist())
 
-            # save misclassified examples
-            for i in range(len(labels)):
-                if preds[i] != labels[i]:
-                    example = {
-                        "predicted": preds[i].item(),
-                        "true": labels[i].item(),
-                        "text": batch["text"][i],
+            # finds all the indices where the predictions differ from the labels,
+            # returning a tensor of misclassified positions then flattens it into
+            # Python list
+            mis_idxs = torch.nonzero(preds != labels,as_tuple=False).flatten().tolist()
+            # the for loop walks through each observation in the list and decodes it
+            # back into text via tokenizer.decode(...)
+            for idx in mis_idxs:
+                decoded_txt = tokenizer.decode(
+                    batch["input_ids"][idx].tolist(), 
+                    skip_special_tokens=True).strip() # strip removes leading and trailing spaces, newlines, and tabs
+                # and then builds a dictionary capturing the predicted class, the true class,
+                # and the decoded review, later appending it to misclassed (i.e a Python list)
+                misclassed.append(
+                    {"predicted": preds[idx].item(), "true": labels[idx].item(),
+                     "text": decoded_txt,
                     }
-                    misclassified_examples.append(example)
+                )
 
-    # compute metrics
+    # the metrics
+    cm = confusion_matrix(all_labels, all_preds, labels=[0, 1])
     acc = accuracy_score(all_labels, all_preds)
-    cm = confusion_matrix(all_labels, all_preds)
 
-    print("Test accuracy")
-    print(acc)
-    print("Confusion matrix")
-    print(cm)
+    print(f"\nTest Accuracy: {acc}")
+    print(f"\nConfusion Matrix: {cm}")
 
-    print("Three misclassified examples")
-    for item in misclassified_examples[:3]:
-        print(item)
+    print("\n3 misclassified examples...")
+    for example in misclassed[:3]:
+        print(example)
 
 if __name__ == "__main__":
+    L.seed_everything(config.RANDOM_SEED, workers=True)
     main()
