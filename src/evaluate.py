@@ -2,12 +2,12 @@ import torch
 from torch.utils.data import DataLoader
 from sklearn.metrics import accuracy_score, confusion_matrix
 
-# import your modules
-from model import SentimentModel
-from data import IMDBDataModule
+from model import LightningBi_LSTM # used to import our trained model
+from datamodule import IMDBDataModule
 
 
 def main():
+    """Peforms an inference test on the trained model"""
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # load trained model
@@ -16,14 +16,14 @@ def main():
     model.to(device)
     model.eval()
 
-    # load data
-    data_module = dataModule()
+    # load IMDB dataset
+    data_module = IMDBDataModule()
     data_module.setup(stage="test")
     test_loader = data_module.test_dataloader()
 
-    all_preds = []
-    all_labels = []
-    misclassified_examples = []
+    all_preds = [] # our predictions
+    all_labels = [] # correct answers/labels
+    misclassified_examples = [] # misclassed examples
 
     # evaluation loop
     with torch.no_grad():
@@ -59,7 +59,6 @@ def main():
     print("Three misclassified examples")
     for item in misclassified_examples[:3]:
         print(item)
-
 
 if __name__ == "__main__":
     main()
