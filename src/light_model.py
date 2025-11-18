@@ -119,10 +119,8 @@ class LightningBi_LSTM(L.LightningModule):
     tn, fp = cm[0, 0], cm[0, 1]
     fn, tp = cm[1, 0], cm[1, 1] 
 
-    # Print the full confusion matrix
     print("Test Confusion Matrix: \n")
-    # Log each value separately (all scalars → works)
-    #Citation: https://docs.pytorch.org/docs/stable/generated/torch.Tensor.float.html
+    #src: https://docs.pytorch.org/docs/stable/generated/torch.Tensor.float.html
     self.log("test_TN", tn.to(torch.float32))
     self.log("test_FP", fp.to(torch.float32))
     self.log("test_FN", fn.to(torch.float32))
@@ -136,8 +134,7 @@ class LightningBi_LSTM(L.LightningModule):
           lr=self.learning_rate,
           weight_decay=0.01
     )
-
-# 2. Define the scheduler
+    # src: https://docs.pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.ReduceLROnPlateau.html
     scheduler = {
         'scheduler': ReduceLROnPlateau(
             optimizer,
@@ -151,6 +148,5 @@ class LightningBi_LSTM(L.LightningModule):
         'monitor': 'val_loss',  # The metric to monitor (must be logged in validation_step)
         'strict': True,
     }
-    
-    # 3. Return the optimizer and scheduler dictionary
+    # Return the optimizer and scheduler dictionary
     return [optimizer], [scheduler]
