@@ -1,32 +1,82 @@
 import lightning as L
-from transformers import BertTokenizer
 import torch
+from sklearn.metrics import accuracy_score, confusion_matrix
+from transformers import BertTokenizer
 
 import config
-from datamodule_IMBD import IMDBDataModule
-from model_bilstm import LightningBi_LSTM
+from datamodule import IMDBDataModule
+from light_model import LightningBi_LSTM
+
 
 def main():
-    CHECKPOINT_PATH = "checkpoints/OUR_SAVED_MODEL.ckpt" 
-    print("loading bert-based-uncased tokenizer...")
+    """Loads the checkpoint, evaluates it, and prints metrics."""
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    checkpoint_path = "checkpoints/OUR_SAVED_MODEL.ckpt" # update this with the location of the chkpoint
+
     tokenizer = BertTokenizer.from_pretrained(config.TOKENIZER_NAME)
 
-    print(f"loading model at {CHECKPOINT_PATH}...")
-    model_module = LightningBi_LSTM.load_from_checkpoint(CHECKPOINT_PATH)
-    
-    print("preparing the data module...")
+    print(f"Loading model from {checkpoint_path}...")
+    model_module = LightningBi_LSTM.load_from_checkpoint(
+        checkpoint_path, vocab_size=tokenizer.vocab_size
+    )
+    model_module.to(device)
+    model_module.eval()
+
+    print("Preparing the IMDB data module...")
     data_module = IMDBDataModule(
         tokenizer=tokenizer,
         batch_size=config.BATCH_SIZE,
         max_length=config.MAX_SEQ_LENGTH
     )
-    print("initializing the trainer...")
-    trainer = L.Trainer(
-        accelerator="gpu",
-        devices=1,
-    )
-    print("running the model with the test set...")
-    trainer.test(model_module, datamodule=data_module)
+    # run the test dataset
+    data_module.setup(stage="test")
+    test_loader = data_module.test_dataloader()
+
+    all_preds = []
+    all_labels = []
+    misclassed = []
+
+    print("running evaluation loop...")
+    with torch.no_grad():
+        for batch in test_loader:
+            input_ids = batch["input_ids"].to(device)
+            labels = batch["ratings"].to(device)
+            
+            logits = model_module(input_ids)
+            preds = torch.argmax(logits, dim=1)
+
+            all_labels.extend(labels.cpu().tolist()) # shift to cpu to save resources
+            all_preds.extend(preds.cpu().tolist())
+
+            # finds all the indices where the predictions differ from the labels,
+            # returning a tensor of misclassified positions then flattens it into
+            # Python list
+            mis_idxs = torch.nonzero(preds != labels,as_tuple=False).flatten().tolist()
+            # the for loop walks through each observation in the list and decodes it
+            # back into text via tokenizer.decode(...)
+            for idx in mis_idxs:
+                decoded_txt = tokenizer.decode(
+                    batch["input_ids"][idx].tolist(), 
+                    skip_special_tokens=True).strip() # strip removes leading and trailing spaces, newlines, and tabs
+                # and then builds a dictionary capturing the predicted class, the true class,
+                # and the decoded review, later appending it to misclassed (i.e a Python list)
+                misclassed.append(
+                    {"predicted": preds[idx].item(), "true": labels[idx].item(),
+                     "text": decoded_txt,
+                    }
+                )
+
+    # the metrics
+    cm = confusion_matrix(all_labels, all_preds, labels=[0, 1])
+    acc = accuracy_score(all_labels, all_preds)
+
+    print(f"\nTest Accuracy: {acc}")
+    print(f"\nConfusion Matrix: {cm}")
+
+    print("\n3 misclassified examples...")
+    for example in misclassed[:3]:
+        print(example)
 
 if __name__ == "__main__":
+    L.seed_everything(config.RANDOM_SEED, workers=True)
     main()
