@@ -1,4 +1,5 @@
 # Assignment 3
+WandB Link: [W&B Project Link](https://wandb.ai/rlewis0-hamilton-college/IMDB/runs/kqd1ofnn?nw=nwuserrlewis0)
 
 To Train:
 -
