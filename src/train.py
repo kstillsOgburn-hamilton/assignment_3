@@ -32,7 +32,7 @@ wandb.init(
     project="IMDB",
     config=dict(
         batch_size=config.BATCH_SIZE,
-        optimizer=config.BATCH_SIZE,
+        optimizer=config.OPTIMIZER,
         lr=config.LEARNING_RATE,
         scheduler=config.SCHEDULER,
         loss=config.LOSS,
