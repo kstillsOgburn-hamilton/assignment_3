@@ -9,7 +9,7 @@ Then run:
 ```
 python train.py
 ```
-This places a checkpoint in the checkpoints file
+This places a checkpoint in the checkpoints folder
 
 To Evaluate on Test:
 -
